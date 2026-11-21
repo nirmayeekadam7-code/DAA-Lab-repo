@@ -1,0 +1,111 @@
+#include <stdio.h>
+
+#define MAX 20
+#define INF 99999
+
+typedef struct {
+    int u;
+    int v;
+    int w;
+} Edge;
+
+void bellmanFord(Edge edges[], int V, int E, int source)
+{
+    int dist[MAX];
+    int parent[MAX];
+    int i, j;
+
+    // Initialize
+    for (i = 1; i <= V; i++) {
+        dist[i] = INF;
+        parent[i] = -1;
+    }
+
+    dist[source] = 0;
+
+    // Relax all edges V-1 times
+    for (i = 1; i <= V - 1; i++) {
+        for (j = 0; j < E; j++) {
+            int u = edges[j].u;
+            int v = edges[j].v;
+            int w = edges[j].w;
+
+            if (dist[u] != INF &&
+                dist[u] + w < dist[v]) {
+
+                dist[v] = dist[u] + w;
+                parent[v] = u;
+            }
+        }
+    }
+
+    // Check for negative cycle
+    for (j = 0; j < E; j++) {
+        int u = edges[j].u;
+        int v = edges[j].v;
+        int w = edges[j].w;
+
+        if (dist[u] != INF &&
+            dist[u] + w < dist[v]) {
+
+            printf("Negative cycle detected\n");
+            return;
+        }
+    }
+
+    // Print results
+    for (i = 1; i <= V; i++) {
+
+        if (i == source)
+            continue;
+
+        if (dist[i] == INF) {
+            printf("%d INF None\n", i);
+        }
+        else {
+            int path[MAX];
+            int count = 0;
+            int current = i;
+
+            while (current != -1) {
+                path[count++] = current;
+                current = parent[current];
+            }
+
+            printf("%d %d ", i, dist[i]);
+
+            // Print path from source to destination
+            for (j = count - 1; j >= 0; j--) {
+                printf("%d", path[j]);
+
+                if (j != 0)
+                    printf("->");
+            }
+
+            printf("\n");
+        }
+    }
+}
+
+int main()
+{
+    int V, E;
+    int source;
+    Edge edges[MAX * MAX];
+
+    scanf("%d", &V);
+    scanf("%d", &E);
+
+    for (int i = 0; i < E; i++) {
+        scanf("%d %d %d",
+              &edges[i].u,
+              &edges[i].v,
+              &edges[i].w);
+    }
+
+    scanf("%d", &source);
+
+    bellmanFord(edges, V, E, source);
+
+    return 0;
+}
