@@ -1,0 +1,61 @@
+#include <stdio.h>
+
+int a[20], subset[20];
+int n, target;
+int results[1000][20];
+int sizes[1000];
+int count = 0;
+
+void subsetSum(int index, int currentSum, int size)
+{
+    if (currentSum == target)
+    {
+        for (int i = 0; i < size; i++)
+            results[count][i] = subset[i];
+
+        sizes[count] = size;
+        count++;
+        return;
+    }
+
+    if (index == n || currentSum > target)
+        return;
+
+    // Include current element
+    subset[size] = a[index];
+    subsetSum(index + 1, currentSum + a[index], size + 1);
+
+    // Exclude current element
+    subsetSum(index + 1, currentSum, size);
+}
+
+int main()
+{
+    scanf("%d", &n);
+
+    for (int i = 0; i < n; i++)
+        scanf("%d", &a[i]);
+
+    scanf("%d", &target);
+
+    subsetSum(0, 0, 0);
+
+    if (count == 0)
+    {
+        printf("-1\n");
+    }
+    else
+    {
+        // Print in reverse order of discovery
+        for (int i = count - 1; i >= 0; i--)
+        {
+            for (int j = 0; j < sizes[i]; j++)
+            {
+                printf("%d ", results[i][j]);
+            }
+            printf("\n");
+        }
+    }
+
+    return 0;
+}
