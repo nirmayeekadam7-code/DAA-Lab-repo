@@ -1,0 +1,126 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+void kruskalMST(int **cost, int V) {
+    typedef struct {
+        int u, v, w;
+    } Edge;
+
+    int maxEdges = V * (V - 1) / 2;
+    Edge *edges = (Edge *)malloc(maxEdges * sizeof(Edge));
+    int edgeCount = 0;
+
+    // Store edges from upper triangular part in row-wise order
+    for (int i = 0; i < V; i++) {
+        for (int j = i + 1; j < V; j++) {
+            if (cost[i][j] != 9999) {
+                edges[edgeCount].u = i;
+                edges[edgeCount].v = j;
+                edges[edgeCount].w = cost[i][j];
+                edgeCount++;
+            }
+        }
+    }
+
+    // Sort edges by weight
+    // Equal-weight edges retain their row-wise order
+    for (int i = 0; i < edgeCount - 1; i++) {
+        for (int j = 0; j < edgeCount - i - 1; j++) {
+            if (edges[j].w > edges[j + 1].w) {
+                Edge temp = edges[j];
+                edges[j] = edges[j + 1];
+                edges[j + 1] = temp;
+            }
+        }
+    }
+
+    // Initialize disjoint sets
+    int *parent = (int *)malloc(V * sizeof(int));
+    int *rank = (int *)calloc(V, sizeof(int));
+
+    for (int i = 0; i < V; i++) {
+        parent[i] = i;
+    }
+
+    int selected = 0;
+    int minCost = 0;
+
+    // Kruskal's algorithm
+    for (int i = 0; i < edgeCount && selected < V - 1; i++) {
+        int u = edges[i].u;
+        int v = edges[i].v;
+
+        // Find root of u
+        int rootU = u;
+        while (parent[rootU] != rootU) {
+            rootU = parent[rootU];
+        }
+
+        // Find root of v
+        int rootV = v;
+        while (parent[rootV] != rootV) {
+            rootV = parent[rootV];
+        }
+
+        // If roots are different, no cycle is formed
+        if (rootU != rootV) {
+
+            // Union by rank
+            if (rank[rootU] < rank[rootV]) {
+                parent[rootU] = rootV;
+            } 
+            else if (rank[rootU] > rank[rootV]) {
+                parent[rootV] = rootU;
+            } 
+            else {
+                parent[rootV] = rootU;
+                rank[rootU]++;
+            }
+
+            printf("Edge %d:(%d, %d) cost:%d\n",
+                   selected, u, v, edges[i].w);
+
+            minCost += edges[i].w;
+            selected++;
+        }
+    }
+
+    printf("Minimum cost= %d\n", minCost);
+
+    free(edges);
+    free(parent);
+    free(rank);
+}
+
+int main() {
+    int V;
+
+    
+    printf("No of vertices: ");
+    scanf("%d", &V);
+
+    int **cost = (int **)malloc(V * sizeof(int *));
+
+    for (int i = 0; i < V; i++) {
+        cost[i] = (int *)malloc(V * sizeof(int));
+    }
+
+    printf("Adjacency matrix:\n");
+
+    for (int i = 0; i < V; i++) {
+        for (int j = 0; j < V; j++) {
+            scanf("%d", &cost[i][j]);
+        }
+    }
+
+    kruskalMST(cost, V);
+
+    for (int i = 0; i < V; i++) {
+        free(cost[i]);
+    }
+
+    free(cost);
+
+    return 0;
+}
